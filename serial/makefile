@@ -1,6 +1,6 @@
 COMPILER=gcc
 FILE=serial.c
-FLAGS=-Wall -g -std=c99
+FLAGS=-Wall -g -std=c99 -lm
 MAKENAME=serial
 
 serial.exe : 

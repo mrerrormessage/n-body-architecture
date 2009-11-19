@@ -1,0 +1,7 @@
+Tests:
+
+test 1: Takes a single body world. Iterates 5 times, body perfectly still. No segfault. 
+
+test 2: Takes a two-body world. Iterates 5 times, results within a margin of error
+
+test 3: takes a 50-body world. Iterates 3 times, results within a margin of error. 
