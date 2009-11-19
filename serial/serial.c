@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #define GRAV_CONST 1.000
 #define TIME_STEP 0.5
@@ -88,6 +89,58 @@ struct cosmos * get_cosmos( int n){
    
   return c;
 
+}
+
+int min( int x, int y ){
+  if (x < y){
+    return x; 
+  }
+  return y;
+}
+
+void read_body( struct body * b, FILE * s){
+  char thisline[80];
+  char *tline;
+  int num_iter = 0;
+  char mass_string[20];
+  char x_posn_string[20];
+  char y_posn_string[20];
+  long mass;
+  long x;
+  long y;
+  fgets(thisline, 79, s);
+  if(thisline == NULL || thisline[0] == ';' || thisline[0] = '\n'){
+    return;
+  }
+  /*the first number represents mass, the second x posn, the third y posn
+  all objects start with zero velocities. All lines starting with semicolons
+  are ignored. 
+  */
+  num_iter = strcspn(thisline, " ");
+  //I'm not sure how strncpy works with memory...we'll find out?
+  strncpy(mass_string, thisline, min(num_iter, 19));
+  tline = &(thisline[num_iter++]);
+  num_iter = strcspn(tline, " ");
+  strncpy(x_posn_string, tline, min(num_iter, 19));
+  tline = &(thisline[num_iter++]);
+  num_iter = strcspn(tline, " \n");
+  strncpy(y_posn_string, tline, min(num_iter, 19));
+
+  //note that due to the way that C likes to convert strings, our values must start off as whole numbers (not such a big deal), then be converted to longs, then to floats
+  mass = atol(mass_string);
+  x = atol(x_posn_string);
+  y = atol(y_posn_string);
+  b->mass = (float)mass;
+  b->x_posn = (float)x;
+  b->y_posn = (float)y;
+  return;
+}
+
+void read_cosmos( const char * filename, struct cosmos * c){
+  
+  for(int i = 0; i < c->num_bodies; i++){
+
+  }
 }
 
 //prints a body
@@ -194,6 +247,8 @@ int main(){
   p_my_cosmos = get_cosmos( NUM_BODIES );
 
   print_cosmos( p_my_cosmos );
+
+  simple_n_body( p_my_cosmos, 2);
   
   cosmos_free( p_my_cosmos );
 
