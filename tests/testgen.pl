@@ -2,25 +2,30 @@
 use strict;
 use warnings;
 
-#the name of the file should be taken as a command line argument
-open( my $out, ">", );
+
+
+#explanation dialogue
+if($ARGV[0] =~ m/--help/){
+    print("usage: ./testgen.pl [x-size] [y-size] [timestep] [numobjects] [maxmass]");
+    exit 0;
+}
 
 #first line defines world size, time-step, and number of objects
-print("\[ ...., ...., ...., ...\]");
+print("\[ $ARGV[0], $ARGV[1], $ARGV[2], $ARGV[3]\]\n");
 
-for (my $i = 0; $i < ... ; $i++){
-
-#command-line argument
-    my $mass = random(  );
+for (my $i = 0; $i < $ARGV[3] ; $i++){
 
 #command-line argument
-    my $x = random( );
+    my $mass = rand( $ARGV[4] );
+
+#command-line argument
+    my $x = rand( $ARGV[0] );
     
 #command-line argument
-    my $y = random( );
+    my $y = rand( $ARGV[1] );
     
 #each line is printed here
-    printf("%f %f %f\n", mass, x, y);
+    printf("%i %i %i\n", $x, $y, $mass);
     
 }
 
