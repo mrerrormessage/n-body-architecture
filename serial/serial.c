@@ -1,36 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
+#include "serial.h"
 
-#define GRAV_CONST 1.000
-#define TIME_STEP 0.5
-#define NUM_BODIES 50
-#define WORLD_X_SIZE 500.0
-#define WORLD_Y_SIZE 500.0
-#define GRAV_CONSTANT 6.67428e-11
-
-struct body {
-  float x_posn;
-  float y_posn;
-  float x_velocity;
-  float y_velocity;
-  float mass;
-};
-
-struct cosmos {
-  int num_bodies;
-  float x_world_size;
-  float y_world_size;
-  struct body * body_list;
-  float time_step;
-};
-
-
-void body_free(struct body * b){
-  free(b);
-  return;
-}
 
 //cosmos_init initializes a cosmos with parameters as given
 struct cosmos * cosmos_init(float ts, int numbodies, float xsize, float ysize){
@@ -98,6 +67,46 @@ int min( int x, int y ){
   return y;
 }
 
+//gets the next good line, checking for EOF and ignoring whitespace and commented lines
+void getnextgoodline( char * s, int n, FILE * f){
+  fgets(s, n, f);
+  if(NULL == s){
+    return;
+  }else if(';' == s[0] || '\n' == s[0]){
+    getnextgoodline( s, n, f);
+    return;
+  }
+}
+
+
+void chunk_string(char * s, char * delimiters, char ** result, int * numresults){
+  int num_iter;
+  int i = 0;
+  int max_results = *numresults;
+  char cp_iter[strlen(s) + 2];
+  strcpy(cp_iter, s);
+  char * cp_temp;
+  char * cp_holder;
+  cp_temp = cp_iter;
+  while(cp_iter[0] != '\n' && max_results > i){
+    num_iter = 0;
+    num_iter = strcspn(cp_temp, delimiters);
+    cp_holder = malloc(sizeof(char) * num_iter + 1);
+    if(NULL == cp_holder){
+      printf("malloc error\n");
+      exit(0);
+    }
+    //copy the string into the temp string, then set the result pointer to point to that string
+    strncpy(cp_holder, s, num_iter);    
+    result[i] = cp_holder; 
+    
+    i++;
+    cp_temp = &(cp_temp[++num_iter]);
+    
+  }
+  *numresults = i;
+}
+
 void read_body( struct body * b, FILE * s){
   char thisline[80];
   char *tline;
@@ -108,8 +117,8 @@ void read_body( struct body * b, FILE * s){
   long mass;
   long x;
   long y;
-  fgets(thisline, 79, s);
-  if(thisline == NULL || thisline[0] == ';' || thisline[0] = '\n'){
+  getnextgoodline(thisline, 79, s);
+  if(thisline == NULL){
     return;
   }
   /*the first number represents mass, the second x posn, the third y posn
@@ -119,7 +128,7 @@ void read_body( struct body * b, FILE * s){
   num_iter = strcspn(thisline, " ");
   //I'm not sure how strncpy works with memory...we'll find out?
   strncpy(mass_string, thisline, min(num_iter, 19));
-  tline = &(thisline[num_iter++]);
+  tline = &(thisline[num_iter]);
   num_iter = strcspn(tline, " ");
   strncpy(x_posn_string, tline, min(num_iter, 19));
   tline = &(thisline[num_iter++]);
@@ -136,13 +145,50 @@ void read_body( struct body * b, FILE * s){
   return;
 }
 
-void read_cosmos( const char * filename, struct cosmos * c){
+/*
+struct cosmos * read_cosmos( const char * filename ) {
+
+  FILE * fp;
+  char * temp_cp;
+  char xsize[20];
+  char ysize[20];
+  char timestep[20];
+  char num_objects[20];
+  fp = fopen( filename, "r" );
+  if(NULL == fp){
+    printf("unable to open file %s \n", filename);
+    exit(1);
+  }
+  char firstline[80];
+  getnextgoodline(firstline, 79, fp);
+  if( NULL == firstline){
+    return NULL;
+  } 
+  if( '[' == firstline[0]){
+    temp_cp = strpbrk( firstline, "0123456789"); 
+    if(NULL == temp_cp){
+      printf("test file in wrong format\n");
+      return NULL;
+    }
+    //will replace with chunk_string, when it's been tested
+    num_iter = strcspn( temp_cp, " ");
+    strncpy(xsize, temp_cp, num_iter);
+    firstline = &(temp_cp[++num_iter])
+    
+
+  }else{
+    printf("test file in wrong format\n");
+    return NULL;
+  }
+  
   
   for(int i = 0; i < c->num_bodies; i++){
 
   }
+ 
+  return
 }
-
+*/
 //prints a body
 void print_body( struct body * b){
   
@@ -204,10 +250,13 @@ void calc_gravity (struct cosmos * c, struct body * b){
     }
   }
   
-  b->x_velocity += (x_force_sum / b->mass);
-  b->y_velocity += (y_force_sum / b->mass);
+  //velocity = acceleration * time
+  //v = v_0 + a * t
+  b->x_velocity += (x_force_sum / b->mass) * c->time_step;
+  b->y_velocity += (y_force_sum / b->mass) * c->time_step;
   
   //may need to have this divided by time_step, not sure
+  //x = x_0 + v * t
   b->x_posn += b->x_velocity * c->time_step;
   b->y_posn += b->y_velocity * c->time_step;
 
