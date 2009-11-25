@@ -31,7 +31,7 @@ struct cosmos {
 
 
 //cosmos_init initializes a cosmos with parameters as given
-struct cosmos * cosmos_init(float ts, int numbodies, float xsize, float ysize);
+struct cosmos * cosmos_init( float xsize, float ysize, float ts, int numbodies);
 
 //returns body k in cosmos c
 struct body * get_body(struct cosmos * c, int k);
@@ -49,13 +49,17 @@ struct cosmos * get_cosmos( int n );
 int min( int x, int y );
 
 //gets the next good line, checking for EOF and ignoring whitespace and commented lines
-void getnextgoodline( char * s, int n, FILE * f);
+int getnextgoodline( char * s, int n, FILE * f);
 
-//returns a string in chunks
-void chunk_string(char * s, char * delimiters, char ** result, int * numresults);
+//splits a string into chunks based on the delimiter, resultc is max results
+//returns number of results retrieved
+int chunk_string(char * s, char * delim, int resultc, char ** res);
+
+//frees chunked arrays
+void free_chunks( char ** c , int num);
 
 //code to read a particular body from a file. 
-void read_body( struct body * b, FILE * s);
+void read_body( struct body * b, char * s);
 
 //reads a cosmos in from a filename
 struct cosmos * read_cosmos( const char * filename );
@@ -65,6 +69,9 @@ void print_body( struct body * b);
 
 //prints the given cosmos;
 void print_cosmos( struct cosmos * c );
+
+//converts a string to a floating point number
+float string_to_float( char * s );
 
 //gets the sign of a number
 float sign( float f );
@@ -77,5 +84,6 @@ void simple_n_body_iter ( struct cosmos * c );
 //n-body simple. 
 void simple_n_body ( struct cosmos * c, int steps );
 
+void compute_world ( struct cosmos * c, int steps, char * outfilename);
 
 #endif

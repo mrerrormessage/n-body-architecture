@@ -1,8 +1,37 @@
 #include "serial.h"
 
 
+//splits a string into chunks based on the delimiter, resultc is max results
+//returns number of results retrieved
+int chunk_string(char * s, char * delim, int resultc, char ** res){
+  if(0 == resultc || '\n' == s[0] || '\0' == s[0]){
+    return 0;
+  }
+  int ch_cnt = strcspn( s, delim );
+  res[0] = malloc( (ch_cnt + 1) * sizeof(char));
+  if(NULL == res[0]){
+    printf("error in malloc\n");
+    exit(0);
+  }
+  strncpy(res[0], s, (ch_cnt));
+  if('\0' == s[ch_cnt] || '\n' == s[ch_cnt] ){
+    return 1;
+  } 
+  return 1 + chunk_string( &(s[ch_cnt + 1]), delim, --resultc, &(res[1]));
+}
+
+//frees chunk-based arrays
+void free_chunks(char ** c, int num){
+  
+  for(int i = 0; i < num; i++){
+    free(c[i]);
+  }
+
+  return;
+}
+
 //cosmos_init initializes a cosmos with parameters as given
-struct cosmos * cosmos_init(float ts, int numbodies, float xsize, float ysize){
+struct cosmos * cosmos_init( float xsize, float ysize, float ts, int numbodies){
 
   struct cosmos * p;
   p = malloc(sizeof(struct cosmos));
@@ -67,128 +96,92 @@ int min( int x, int y ){
   return y;
 }
 
+//converts a string to a floating point number
+float string_to_float( char * s ){
+  char * nums[2];
+  int resct = chunk_string( s, ".", 2, nums);
+  if(0 == resct || 2 < resct){
+    printf("string: \"%s\" is not a float!\n", s);
+    return 0.0;
+  }
+  if(1 == resct){
+    return (float)atol(nums[0]);
+  }
+  return (float)atol(nums[0]) + (atol(nums[1]) / pow(10, (int)strlen(nums[1])) ) ;
+}
+
 //gets the next good line, checking for EOF and ignoring whitespace and commented lines
-void getnextgoodline( char * s, int n, FILE * f){
+int getnextgoodline( char * s, int n, FILE * f){
   fgets(s, n, f);
   if(NULL == s){
-    return;
+    return 1;
+    //semicolon escapes commented lines
   }else if(';' == s[0] || '\n' == s[0]){
-    getnextgoodline( s, n, f);
-    return;
+    return getnextgoodline( s, n, f);    
   }
+  return 0;
 }
 
-
-void chunk_string(char * s, char * delimiters, char ** result, int * numresults){
-  int num_iter;
-  int i = 0;
-  int max_results = *numresults;
-  char cp_iter[strlen(s) + 2];
-  strcpy(cp_iter, s);
-  char * cp_temp;
-  char * cp_holder;
-  cp_temp = cp_iter;
-  while(cp_iter[0] != '\n' && max_results > i){
-    num_iter = 0;
-    num_iter = strcspn(cp_temp, delimiters);
-    cp_holder = malloc(sizeof(char) * num_iter + 1);
-    if(NULL == cp_holder){
-      printf("malloc error\n");
-      exit(0);
-    }
-    //copy the string into the temp string, then set the result pointer to point to that string
-    strncpy(cp_holder, s, num_iter);    
-    result[i] = cp_holder; 
-    
-    i++;
-    cp_temp = &(cp_temp[++num_iter]);
-    
+void read_body( struct body * b, char * s){
+  char * chunk_res[3];
+  int num_chunks = chunk_string(s , " " , 3, chunk_res);
+  if(3 != num_chunks){
+    printf("string \"%s\" is not a valid body!\n", s);
   }
-  *numresults = i;
-}
 
-void read_body( struct body * b, FILE * s){
-  char thisline[80];
-  char *tline;
-  int num_iter = 0;
-  char mass_string[20];
-  char x_posn_string[20];
-  char y_posn_string[20];
-  long mass;
-  long x;
-  long y;
-  getnextgoodline(thisline, 79, s);
-  if(thisline == NULL){
-    return;
-  }
   /*the first number represents mass, the second x posn, the third y posn
   all objects start with zero velocities. All lines starting with semicolons
   are ignored. 
   */
-  num_iter = strcspn(thisline, " ");
-  //I'm not sure how strncpy works with memory...we'll find out?
-  strncpy(mass_string, thisline, min(num_iter, 19));
-  tline = &(thisline[num_iter]);
-  num_iter = strcspn(tline, " ");
-  strncpy(x_posn_string, tline, min(num_iter, 19));
-  tline = &(thisline[num_iter++]);
-  num_iter = strcspn(tline, " \n");
-  strncpy(y_posn_string, tline, min(num_iter, 19));
-
-  //note that due to the way that C likes to convert strings, our values must start off as whole numbers (not such a big deal), then be converted to longs, then to floats
-  mass = atol(mass_string);
-  x = atol(x_posn_string);
-  y = atol(y_posn_string);
-  b->mass = (float)mass;
-  b->x_posn = (float)x;
-  b->y_posn = (float)y;
+  
+  b->mass = string_to_float( chunk_res[0] );
+  b->x_posn = string_to_float( chunk_res[1] );
+  b->y_posn = string_to_float( chunk_res[2] );
+  
   return;
 }
 
-/*
+//takes a filename, gets a cosmos, viola!
 struct cosmos * read_cosmos( const char * filename ) {
 
   FILE * fp;
-  char * temp_cp;
-  char xsize[20];
-  char ysize[20];
-  char timestep[20];
-  char num_objects[20];
+  int num_res;
+  char * firstlineargs[4];
   fp = fopen( filename, "r" );
+
   if(NULL == fp){
     printf("unable to open file %s \n", filename);
     exit(1);
   }
+
   char firstline[80];
   getnextgoodline(firstline, 79, fp);
-  if( NULL == firstline){
-    return NULL;
-  } 
-  if( '[' == firstline[0]){
-    temp_cp = strpbrk( firstline, "0123456789"); 
-    if(NULL == temp_cp){
-      printf("test file in wrong format\n");
-      return NULL;
-    }
-    //will replace with chunk_string, when it's been tested
-    num_iter = strcspn( temp_cp, " ");
-    strncpy(xsize, temp_cp, num_iter);
-    firstline = &(temp_cp[++num_iter])
-    
-
-  }else{
+  if( NULL == firstline || ':' != firstline[0]){
     printf("test file in wrong format\n");
     return NULL;
   }
-  
-  
-  for(int i = 0; i < c->num_bodies; i++){
-
+  num_res = chunk_string( &(firstline[1]), " ", 4 , firstlineargs );
+  if(4 != num_res){
+    printf("wrong number of arguments on input file!\n");
+    return NULL;
   }
- 
-  return
+
+  struct cosmos * c = 
+    cosmos_init(string_to_float( firstlineargs[0] ), 
+		string_to_float( firstlineargs[1] ), 
+		string_to_float( firstlineargs[2] ), 
+		atoi( firstlineargs[3] ) );
+
+  free_chunks(firstlineargs, 4);
+
+  char line[100];
+  for(int i = 0; i < c->num_bodies && (0 == getnextgoodline(line, 99, fp)); i++){
+    read_body(  &(c->body_list[i]) , line);
+  }
+  
+  return c;
 }
-*/
+
 //prints a body
 void print_body( struct body * b){
   
@@ -287,13 +280,11 @@ void simple_n_body ( struct cosmos * c, int steps ){
 }
 
 
-int main(){
+int main(int argc, char ** argv){
 
-  printf("hello, world\n");
-
-  struct cosmos * p_my_cosmos;
-
-  p_my_cosmos = get_cosmos( NUM_BODIES );
+  printf("beginning serial n-body...\n");
+  char infilename[] = "test.dat";
+  struct cosmos * p_my_cosmos = read_cosmos( infilename );
 
   print_cosmos( p_my_cosmos );
 

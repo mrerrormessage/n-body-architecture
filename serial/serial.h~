@@ -31,7 +31,7 @@ struct cosmos {
 
 
 //cosmos_init initializes a cosmos with parameters as given
-struct cosmos * cosmos_init(float ts, int numbodies, float xsize, float ysize);
+struct cosmos * cosmos_init( float xsize, float ysize, float ts, int numbodies);
 
 //returns body k in cosmos c
 struct body * get_body(struct cosmos * c, int k);
@@ -51,11 +51,15 @@ int min( int x, int y );
 //gets the next good line, checking for EOF and ignoring whitespace and commented lines
 void getnextgoodline( char * s, int n, FILE * f);
 
-//returns a string in chunks
-void chunk_string(char * s, char * delimiters, char ** result, int * numresults);
+//splits a string into chunks based on the delimiter, resultc is max results
+//returns number of results retrieved
+int chunk_string(char * s, char * delim, int resultc, char ** res);
+
+//frees chunked arrays
+void free_chunks( char ** c , int num);
 
 //code to read a particular body from a file. 
-void read_body( struct body * b, FILE * s);
+void read_body( struct body * b, char * s);
 
 //reads a cosmos in from a filename
 struct cosmos * read_cosmos( const char * filename );
@@ -66,56 +70,13 @@ void print_body( struct body * b);
 //prints the given cosmos;
 void print_cosmos( struct cosmos * c );
 
+//converts a string to a floating point number
+float string_to_float( char * s );
+
 //gets the sign of a number
-float sign( float f ){
-  if (f == 0.0){
-    return 0.0;
-  }
-  if (f < 0.0){
-    return -1.0;
-  }
-  return 1.0;
-}
+float sign( float f );
 
-void calc_gravity (struct cosmos * c, struct body * b){
-  float xdiff;
-  float ydiff;
-  float dist_sq;
-  float force;
-  float dist;
-  float theta;
-  //  float x_accel = 0.0;
-  //  float y_accel = 0.0;
-  float x_force_sum = 0.0;
-  float y_force_sum = 0.0;
-  for(int i = 0; i < c->num_bodies; i++){
-    struct body * b2;
-    b2 = get_body(c, i);
-
-    if( b2 != b ){
-      xdiff = b->x_posn - b2->x_posn;
-      ydiff = b->y_posn - b2->y_posn;
-      //note that this is actually distance squared, but that's the term we need anyhow
-      dist_sq = pow( xdiff, 2.0) + pow(ydiff, 2.0);
-      force = GRAV_CONST * (b->mass) * (b2->mass) / dist_sq;
-      //now we need to split it out into two separate vectors
-      dist = sqrt(dist_sq);
-      theta = atan(ydiff/xdiff);
-      x_force_sum += force * sign(xdiff) * cos(theta);
-      y_force_sum += force * sign(ydiff) * sin(theta);
-    }
-  }
-  
-  b->x_velocity += (x_force_sum / b->mass);
-  b->y_velocity += (y_force_sum / b->mass);
-  
-  //may need to have this divided by time_step, not sure
-  b->x_posn += b->x_velocity * c->time_step;
-  b->y_posn += b->y_velocity * c->time_step;
-
-  
-  return;
-}
+void calc_gravity (struct cosmos * c, struct body * b);
 
 //one iteration of the n_body
 void simple_n_body_iter ( struct cosmos * c );
@@ -123,5 +84,6 @@ void simple_n_body_iter ( struct cosmos * c );
 //n-body simple. 
 void simple_n_body ( struct cosmos * c, int steps );
 
+void compute_world ( struct cosmos * c, int steps, char * outfilename);
 
 #endif
