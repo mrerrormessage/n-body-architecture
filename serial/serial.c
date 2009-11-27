@@ -242,12 +242,16 @@ void calc_gravity (struct cosmos * c, struct body * b){
       y_force_sum += force * sign(ydiff) * sin(theta);
     }
   }
-  
+
+  printf("sum of x forces: %f\n", x_force_sum);
+
   //velocity = acceleration * time
   //v = v_0 + a * t
   b->x_velocity += (x_force_sum / b->mass) * c->time_step;
   b->y_velocity += (y_force_sum / b->mass) * c->time_step;
-  
+
+  printf("x-velocit: %f\n", b->x_velocity);
+
   //may need to have this divided by time_step, not sure
   //x = x_0 + v * t
   b->x_posn += b->x_velocity * c->time_step;
@@ -289,7 +293,11 @@ int main(int argc, char ** argv){
   print_cosmos( p_my_cosmos );
 
   simple_n_body( p_my_cosmos, 2);
-  
+
+  printf("simulating....\n");
+
+  print_cosmos( p_my_cosmos );
+
   cosmos_free( p_my_cosmos );
 
   return 0;
