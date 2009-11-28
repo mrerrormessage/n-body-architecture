@@ -138,6 +138,7 @@ void read_body( struct body * b, char * s){
   b->x_posn = string_to_float( chunk_res[1] );
   b->y_posn = string_to_float( chunk_res[2] );
   
+  free_chunks(chunk_res, 3);
   return;
 }
 
@@ -214,6 +215,26 @@ float sign( float f ){
   return 1.0;
 }
 
+
+
+void point_update_compute(struct body * b1, struct body * b2){
+
+  float xdiff = b1->x_posn - b2->x_posn;
+  float ydiff = b1->y_posn - b2->y_posn;
+  float dist_sq = pow( xdiff, 2.0) + pow( ydiff, 2.0);
+  float force = GRAV_CONST * b1->mass * b2->mass / dist_sq;
+  float theta = atan(ydiff/xdiff);
+  b1->x_force += force * sign(xdiff) * cos(theta);
+  b1->y_force += force * sign(ydiff) * sin(theta);
+  //may want these lines to be "+=" we'll find out
+  b2->x_force -= force * sign(xdiff) * cos(theta);
+  b2->y_force -= force * sign(ydiff) * sin(theta);
+
+  return;
+}
+
+//this entire function seems to be nearing deprecation
+/*
 void calc_gravity (struct cosmos * c, struct body * b){
   float xdiff;
   float ydiff;
@@ -228,19 +249,9 @@ void calc_gravity (struct cosmos * c, struct body * b){
   for(int i = 0; i < c->num_bodies; i++){
     struct body * b2;
     b2 = get_body(c, i);
+    for(int j = i; j < c->num_bodies
 
-    if( b2 != b ){
-      xdiff = b->x_posn - b2->x_posn;
-      ydiff = b->y_posn - b2->y_posn;
-      //note that this is actually distance squared, but that's the term we need anyhow
-      dist_sq = pow( xdiff, 2.0) + pow(ydiff, 2.0);
-      force = GRAV_CONST * (b->mass) * (b2->mass) / dist_sq;
-      //now we need to split it out into two separate vectors
-      dist = sqrt(dist_sq);
-      theta = atan(ydiff/xdiff);
-      x_force_sum += force * sign(xdiff) * cos(theta);
-      y_force_sum += force * sign(ydiff) * sin(theta);
-    }
+
   }
 
   printf("sum of x forces: %f\n", x_force_sum);
@@ -250,14 +261,34 @@ void calc_gravity (struct cosmos * c, struct body * b){
   b->x_velocity += (x_force_sum / b->mass) * c->time_step;
   b->y_velocity += (y_force_sum / b->mass) * c->time_step;
 
-  printf("x-velocit: %f\n", b->x_velocity);
+  printf("x-velocity before: %f\n", b->x_velocity);
+  printf("x-differential: %f\n", b->x_velocity * c->time_step);
 
   //may need to have this divided by time_step, not sure
   //x = x_0 + v * t
-  b->x_posn += b->x_velocity * c->time_step;
-  b->y_posn += b->y_velocity * c->time_step;
+  //the '-' here is a hack because we seem to be getting the wrong numbers
+  b->x_posn = b->x_posn - (b->x_velocity * c->time_step);
+  b->y_posn = b->y_posn - (b->y_velocity * c->time_step);
 
-  
+  printf("x-posn after: %f\n", b->x_posn);
+
+  return;
+}
+*/
+
+void calc_movement(struct cosmos * c, struct body * b){
+
+  //velocity = acceleration * time
+  //v = v_0 + a * t
+  b->x_velocity += (b->x_force / b->mass) * c->time_step;
+  b->y_velocity += (b->y_force / b->mass) * c->time_step;
+
+  //may need to have this divided by time_step, not sure
+  //x = x_0 + v * t
+  //the '-' here is a hack because we seem to be getting the wrong numbers
+  b->x_posn = b->x_posn - (b->x_velocity * c->time_step);
+  b->y_posn = b->y_posn - (b->y_velocity * c->time_step);
+
   return;
 }
 
@@ -267,7 +298,18 @@ void simple_n_body_iter ( struct cosmos * c ){
   for(int i = 0; i < c->num_bodies; i++){
     struct body * b; 
     b = get_body( c, i ); 
-    calc_gravity( c, b );
+    for(int j = i + 1; j < c->num_bodies; j++){
+      struct body * b2;
+      b2 = get_body( c, j);
+      
+      point_update_compute(b, b2);
+      
+    }
+
+    //calc movement down here for each body that has had all interactions calculated on it
+    calc_movement(c, b);
+    
+
   }
   
   return;
@@ -285,6 +327,12 @@ void simple_n_body ( struct cosmos * c, int steps ){
 
 
 int main(int argc, char ** argv){
+  int num_steps;
+  if(argc <= 1){
+    num_steps = 200;
+  } else {
+    num_steps = atoi(argv[1]);
+  }
 
   printf("beginning serial n-body...\n");
   char infilename[] = "test.dat";
@@ -292,7 +340,7 @@ int main(int argc, char ** argv){
 
   print_cosmos( p_my_cosmos );
 
-  simple_n_body( p_my_cosmos, 2);
+  simple_n_body( p_my_cosmos, num_steps);
 
   printf("simulating....\n");
 

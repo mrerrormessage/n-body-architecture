@@ -18,6 +18,8 @@ struct body {
   float y_posn;
   float x_velocity;
   float y_velocity;
+  float x_force;
+  float y_force;
   float mass;
 };
 
@@ -48,6 +50,13 @@ struct cosmos * get_cosmos( int n );
 //I couldn't get the math min to work, so I used this
 int min( int x, int y );
 
+//calculates the force interactions between two points, updating both of them
+void point_update_compute(struct body * b1, struct body * b2);
+
+//once a point has been updated with all other points, it then has it's
+//movement calculated based on the sum of all forces
+void calc_movement(struct cosmos * c, struct body * b);
+
 //gets the next good line, checking for EOF and ignoring whitespace and commented lines
 int getnextgoodline( char * s, int n, FILE * f);
 
@@ -76,7 +85,7 @@ float string_to_float( char * s );
 //gets the sign of a number
 float sign( float f );
 
-void calc_gravity (struct cosmos * c, struct body * b);
+//void calc_gravity (struct cosmos * c, struct body * b);
 
 //one iteration of the n_body
 void simple_n_body_iter ( struct cosmos * c );
