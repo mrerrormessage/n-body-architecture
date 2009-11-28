@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include "cosmos.h"
+#include "../lib/cosmos.h"
 
 #define GRAV_CONST 1.000
 #define TIME_STEP 0.5

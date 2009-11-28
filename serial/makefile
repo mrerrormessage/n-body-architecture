@@ -9,10 +9,10 @@ serial.exe : $(LINKFILES)
 	$(COMPILER) $(FLAGS) $(FILE) $(LINKFILES) -o $(MAKENAME)
 
 cosmos.o : nbodyutil.o
-	$(COMPILER) $(FLAGS) nbodyutil.o -c cosmos.c -o cosmos.o
+	$(COMPILER) $(FLAGS) nbodyutil.o -c ../lib/cosmos.c -o cosmos.o
 
 nbodyutil.o:
-	$(COMPILER) $(FLAGS) -c nbodyutil.c -o nbodyutil.o
+	$(COMPILER) $(FLAGS) -c ../lib/nbodyutil.c -o nbodyutil.o
 
 test : 
 	$(COMPILER) $(FLAGS) $(TESTFILE) $(FILE) -o testrun
