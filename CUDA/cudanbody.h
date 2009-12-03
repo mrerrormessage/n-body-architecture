@@ -1,5 +1,5 @@
-#ifndef _MPINBODY_H_
-#define _MPINBODY_H_
+#ifndef _CUDANBODY_H_
+#define _CUDANBODY_H_
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
