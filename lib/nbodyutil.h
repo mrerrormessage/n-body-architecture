@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <math.h>
 
-
 //gets the next good line, checking for EOF and ignoring whitespace and commented lines
 int getnextgoodline( char * s, int n, FILE * f);
 

@@ -50,5 +50,11 @@ void print_cosmos( struct cosmos * c );
 //cosmos of n bodies
 struct cosmos * get_cosmos( int n );
 
+//calculates the gravitational forces between two points
+void point_update_compute(struct body * b1, struct body * b2, const float gravity);
+
+//calculates the movement that a given point should take in a given step. Should be called after a
+//point has been point_udate_computed with every other point
+void calc_movement(struct body * b, const float time_step);
 
 #endif

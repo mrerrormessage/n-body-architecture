@@ -146,3 +146,37 @@ void print_cosmos( struct cosmos * c ){
 
 }
 
+void point_update_compute(struct body * b1, struct body * b2, float gravity){
+
+  float xdiff = b1->x_posn - b2->x_posn;
+  float ydiff = b1->y_posn - b2->y_posn;
+  float dist_sq = pow( xdiff, 2.0) + pow( ydiff, 2.0);
+  float force = gravity * b1->mass * b2->mass / dist_sq;
+  float theta = atan(ydiff/xdiff);
+  b1->x_force += force * sign(xdiff) * cos(theta);
+  b1->y_force += force * sign(ydiff) * sin(theta);
+  //may want these lines to be "+=" we'll find out
+  b2->x_force -= force * sign(xdiff) * cos(theta);
+  b2->y_force -= force * sign(ydiff) * sin(theta);
+
+  return;
+}
+
+
+void calc_movement(struct body * b,const float time_step){
+
+  //velocity = acceleration * time
+  //v = v_0 + a * t
+  b->x_velocity += (b->x_force / b->mass) * time_step;
+  b->y_velocity += (b->y_force / b->mass) * time_step;
+
+  //may need to have this divided by time_step, not sure
+  //x = x_0 + v * t
+  //the '-' here is a hack because we seem to be getting the wrong numbers
+  b->x_posn = b->x_posn - (b->x_velocity * time_step);
+  //or maybe the '+' here is the hack. We'll find out
+  b->y_posn = b->y_posn + (b->y_velocity * time_step);
+
+  return;
+}
+
