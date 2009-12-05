@@ -4,8 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include "../lib/cosmos.h"
-#include "../lib/nbodyutil.h"
+#include "cosmos.cu"
 
 #define GRAV_CONST 1.000
 #define TIME_STEP 0.5

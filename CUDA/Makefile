@@ -1,18 +1,23 @@
-OMPILER=nvcc
-FILE=cudanbody.c
-FLAGS=-Wall -g -std=c99 -lm -deviceemu
-TESTFILE=unittest.c
-MAKENAME=mpinbody
-LINKFILES=cosmos.o nbodyutil.o
+CUDACOMPILER=nvcc
+COMPILER=gcc
+FILE=cudanbody.cu
+FLAGS=-Wall -g -std=c99 -lm
+CUDAFLAGS=-deviceemu -O0 -v
+TESTFILE=cudahello.cu
+TESTNAME=cudahello
+MAKENAME=cudanbody
+LINKFILES=cosmos1.o nbodyutil1.o
+CUDALINKFILES=cosmos.o nbdyutil2.o
+CUDALINKFLAGS=--host-compilation c --compiler-options "-std=c99"
 
-mpi.exe : $(LINKFILES)
-	$(COMPILER) $(FLAGS) $(FILE) $(LINKFILES) -o $(MAKENAME)
+simple: 
+	$(CUDACOMPILER) $(CUDAFLAGS) cudanbody.cu -o $(MAKENAME)
 
-cosmos.o : nbodyutil.o
-	$(COMPILER) $(FLAGS) nbodyutil.o -c ../lib/cosmos.c -o cosmos.o
+cosmos: 
+	$(CUDACOMPILER) -lib $(CUDAFLAGS) cosmos.cu -o cosmos.lib
 
-nbodyutil.o:
-	$(COMPILER) $(FLAGS) -c ../lib/nbodyutil.c -o nbodyutil.o
+hello: 
+	$(CUDACOMPILER) $(CUDAFLAGS) $(TESTFILE) -o $(TESTNAME)
 
 test : 
 	$(COMPILER) $(FLAGS) $(TESTFILE) $(FILE) -o testrun
