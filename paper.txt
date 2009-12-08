@@ -1,0 +1,14 @@
+Abstract:
+
+
+
+Introduction:
+	MPI, CUDA, OpenCL, and OpenMP are key technologies in parallel processing and High Performance Computing (HPC). Comparisons between these technologies is, in many ways, a difficult process, since there is specialized knowledge bases for each technology. Further, these technologies represent different paradigms in the way parallel processing is done. 
+     	At least MPI, OpenCL, and OpenMP share the goal of being massively cross-platform. CUDA aims to be a tool specialized to run on certain (NVidia) hardware.
+
+CUDA versus OpenCL
+     CUDA, while not easy to install, had very clear instructions. All the components snapped in nicely to my Ubuntu installation (even if they aren't available on apt), even giving my desktop a nice bump in graphics sparkle.
+
+     CUDA is not a piece of cake to use at first. It requires that the programmer wrap his brain around the notion of a kernel. A kernel is simply device code that is run out to the GPU, not run locally on the CPU hardware. 
+
+     OpenCL was not a piece of cake to install. I should have recognized the need to install a specific set of drivers, but I assumed that NVidia had given me the newest drivers with the CUDA installation. From some comments on NVidia forums, it appears that even bleeding-edge NVidia drivers with more recent release numbers don't contain the libraries necessary for OpenCL programs to compile correctly.  
