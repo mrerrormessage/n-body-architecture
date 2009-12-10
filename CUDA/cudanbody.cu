@@ -38,7 +38,6 @@ int main(int argc, char ** argv)
   struct body * ret_b = (struct body *) malloc(sizeof(struct body) * c->num_bodies);
   struct cosmos * c_d; 
   struct body * b_d;
-  struct body * temp = c->body_list;
   
 
   cudaMalloc((void **) &b_d, sizeof(struct body) * c->num_bodies);
@@ -103,7 +102,7 @@ __global__ void nBodyCompute(struct cosmos * c, struct body * blist){
   //since there is a thread launched for each body, this means that 
   //the id of our particular body is equivalent to the thread id. 
   struct body * b = &(blist[i_am]);
-  __syncthreads();
+  //__syncthreads();
   //compare with all higher bodies
   for(int i = i_am + 1; i < c->num_bodies; i++){
     point_update_compute(b, &(blist[i]) , GRAV_CONST );
