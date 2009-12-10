@@ -27,6 +27,7 @@ int chunk_string(char * s, char * delim, int resultc, char ** res){
     exit(0);
   }
   strncpy(res[0], s, (ch_cnt));
+  res[0][ch_cnt] = '\0';
   if('\0' == s[ch_cnt] || '\n' == s[ch_cnt] ){
     return 1;
   } 
@@ -91,7 +92,10 @@ void read_body( struct body * b, char * s){
   b->mass = string_to_float( chunk_res[0] );
   b->x_posn = string_to_float( chunk_res[1] );
   b->y_posn = string_to_float( chunk_res[2] );
-  
+  b->x_velocity = 0.0;
+  b->y_velocity = 0.0;
+  b->x_force = 0.0;
+  b->y_force = 0.0;
   free_chunks(chunk_res, 3);
   return;
 }
