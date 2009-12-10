@@ -29,7 +29,10 @@ void read_body( struct body * b, char * s){
   b->mass = string_to_float( chunk_res[0] );
   b->x_posn = string_to_float( chunk_res[1] );
   b->y_posn = string_to_float( chunk_res[2] );
-  
+  b->x_velocity = 0.0;
+  b->y_velocity = 0.0;
+  b->x_force = 0.0;
+  b->y_force = 0.0;
   free_chunks(chunk_res, 3);
   return;
 }

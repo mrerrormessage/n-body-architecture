@@ -39,6 +39,7 @@ int chunk_string(char * s, char * delim, int resultc, char ** res){
     exit(0);
   }
   strncpy(res[0], s, (ch_cnt));
+  res[0][ch_cnt] = '\0';
   if('\0' == s[ch_cnt] || '\n' == s[ch_cnt] ){
     return 1;
   } 
