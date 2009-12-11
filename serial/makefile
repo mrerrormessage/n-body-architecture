@@ -1,6 +1,6 @@
 COMPILER=gcc
 FILE=serial.c
-FLAGS=-Wall -g -std=c99 -lm
+FLAGS=-Wall -g -std=c99 -lm -O3
 TESTFILE=unittest.c
 MAKENAME=serial
 LINKFILES=cosmos.o nbodyutil.o
