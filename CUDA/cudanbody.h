@@ -8,7 +8,7 @@
 
 #define GRAV_CONST 1.000
 #define TIME_STEP 0.5
-#define GRAV_CONSTANT 6.67428e-11
+//#define GRAV_CONSTANT 6.67428e-11
 
 
 

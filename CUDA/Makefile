@@ -2,7 +2,7 @@ CUDACOMPILER=nvcc
 COMPILER=gcc
 FILE=cudanbody.cu
 FLAGS=-Wall -g -std=c99 -lm
-CUDAFLAGS=-deviceemu
+CUDAFLAGS=-deviceemu 
 TESTFILE=cudahello.cu
 TESTNAME=cudahello
 MAKENAME=cudanbody

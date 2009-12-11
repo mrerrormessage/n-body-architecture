@@ -98,11 +98,8 @@ int main(int argc, char ** argv)
 __global__ void nBodyCompute(struct cosmos * c, struct body * blist){
  
   int i_am = threadIdx.x;
-  //get the appropriate body
-  //since there is a thread launched for each body, this means that 
-  //the id of our particular body is equivalent to the thread id. 
   struct body * b = &(blist[i_am]);
-  //__syncthreads();
+
   //compare with all higher bodies
   for(int i = i_am + 1; i < c->num_bodies; i++){
     point_update_compute(b, &(blist[i]) , GRAV_CONST );
@@ -112,3 +109,5 @@ __global__ void nBodyCompute(struct cosmos * c, struct body * blist){
   __syncthreads();
   calc_movement(b, c->time_step); 
 }
+
+
